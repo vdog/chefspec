@@ -277,7 +277,16 @@ have to write your <code>Cheffile</code> like this:</p>
 <p>Assert that a resource notifies another in the Chef run</p>
 
 <div class="highlight highlight-ruby"><pre><span class="n">resource</span> <span class="o">=</span> <span class="n">chef_run</span><span class="o">.</span><span class="n">template</span><span class="p">(</span><span class="s1">'/etc/foo'</span><span class="p">)</span>
-<span class="n">expect</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">notify</span><span class="p">(</span><span class="s1">'service[apache2]'</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="ss">:restart</span><span class="p">)</span>
+<span class="n">expect</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">notify</span><span class="p">(</span><span class="s1">'service[apache2]'</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="ss">:restart</span><span class="p">)</span><span class="o">.</span><span class="n">immediately</span>
+</pre></div>
+
+<h5>
+<a name="subscribes" class="anchor" href="#subscribes"><span class="octicon octicon-link"></span></a>subscribes</h5>
+
+<p>Assert that a resource subscribes to another in the Chef run</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">resource</span> <span class="o">=</span> <span class="n">chef_run</span><span class="o">.</span><span class="n">service</span><span class="p">(</span><span class="s1">'apache2'</span><span class="p">)</span>
+<span class="n">expect</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">subscribe_to</span><span class="p">(</span><span class="s1">'template[/etc/foo]'</span><span class="p">)</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="ss">:create</span><span class="p">)</span><span class="o">.</span><span class="n">delayed</span>
 </pre></div>
 
 <h5>
@@ -501,6 +510,15 @@ You can stub this data_bag with:
 <span class="k">end</span>
 </pre></div>
 
+<p>If you are using <strong>Encrypted Data Bag Items</strong>, you'll need to dive into the RSpec layer and stub that class method instead:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">describe</span> <span class="s1">'example::default'</span> <span class="k">do</span>
+  <span class="n">before</span> <span class="k">do</span>
+    <span class="no">Chef</span><span class="o">::</span><span class="no">EncryptedDataBagItem</span><span class="o">.</span><span class="n">stub</span><span class="p">(</span><span class="ss">:load</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="s1">'users'</span><span class="p">,</span> <span class="s1">'svargo'</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="o">.</span><span class="n">.</span><span class="o">.</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
 <h3>
 <a name="search" class="anchor" href="#search"><span class="octicon octicon-link"></span></a>Search</h3>
 
@@ -542,7 +560,7 @@ You can stub this search with:
 
 <p>ChefSpec attempts to generate a report of resources read over resources tested. Please note, this feature is currently in beta phases and may not be 100% accurate. That being said, it's currently the only code coverage tool available for Chef recipes.</p>
 
-<p>To generate the coverage report, add the following the the <strong>very end</strong> of your <code>spec_helper.rb</code>:</p>
+<p>To generate the coverage report, add the following to the <strong>very end</strong> of your <code>spec_helper.rb</code>:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="c1"># Existing things...</span>
 
@@ -568,7 +586,7 @@ Untouched Resources:
 
 <p>It also outputs a machine-parsable JSON file at <code>.coverage/results.json</code>. This file can be read by your CI server to determine changes in code coverage. We recommend adding the <code>.coverage</code> directory to your <code>.gitignore</code> to avoid committing it to git.</p>
 
-<p>You can configure both the announcing behavior and JSON file. Please see the YARD documentaion for more information.</p>
+<p>You can configure both the announcing behavior and JSON file. Please see the YARD documentation for more information.</p>
 
 <p>If you want to restrict coverage reporting only against certain cookbook directories, you can do it using filters. For example, to include only the site-cookbooks directory for coverage reporting, add the following line in your <code>spec/spec_helper.rb</code></p>
 
@@ -817,7 +835,7 @@ Relevant File Content:
 <h2>
 <a name="faster-specs" class="anchor" href="#faster-specs"><span class="octicon octicon-link"></span></a>Faster Specs</h2>
 
-<p>ChefSpec aims to provide the easiest and simplest path for new users to write RSpec examples for Chef cookbooks. In doing so, it makes some sacrifies in terms of speed and agility of execution. In other words, ChefSpec favors "speed to develop" over "speed to execute". Many of these decisions are directly related to the way Chef dynamically loads resources at runtime.</p>
+<p>ChefSpec aims to provide the easiest and simplest path for new users to write RSpec examples for Chef cookbooks. In doing so, it makes some sacrifices in terms of speed and agility of execution. In other words, ChefSpec favors "speed to develop" over "speed to execute". Many of these decisions are directly related to the way Chef dynamically loads resources at runtime.</p>
 
 <p>If you understand how RSpec works and would like to see some significant speed improvements in your specs, you can use the <code>ChefSpec::Cacher</code> module inspired by <a href="https://github.com/DracoAter">Juri Timošin</a>. Just require the cacher module in your spec helper.</p>
 

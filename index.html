@@ -332,6 +332,20 @@ have to write your <code>Cheffile</code> like this:</p>
 <span class="k">end</span>
 </pre></div>
 
+<h3>
+<a name="automatic-attributes" class="anchor" href="#automatic-attributes"><span class="octicon octicon-link"></span></a>Automatic attributes</h3>
+
+<p>ChefSpec provides mocked automatic Ohai data using <a href="https://github.com/customink/fauxhai">fauxhai</a>. To mock out <code>automatic</code> attributes, you must use the <code>automatic</code> key:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">describe</span> <span class="s1">'example::default'</span> <span class="k">do</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:chef_run</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ChefSpec</span><span class="o">::</span><span class="no">Runner</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
+      <span class="n">node</span><span class="o">.</span><span class="n">automatic</span><span class="o">[</span><span class="s1">'memory'</span><span class="o">][</span><span class="s1">'total'</span><span class="o">]</span> <span class="o">=</span> <span class="s1">'512kB'</span>
+    <span class="k">end</span><span class="o">.</span><span class="n">converge</span><span class="p">(</span><span class="n">described_recipe</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
 <p>The <code>node</code> that is returned is actually a <a href="http://docs.opscode.com/essentials_node_object.html"><code>Chef::Node</code></a> object.</p>
 
 <p>To set an attribute within a specific test, set the attribute in the <code>it</code> block and then <strong>(re-)converge the node</strong>:</p>
@@ -397,13 +411,13 @@ have to write your <code>Cheffile</code> like this:</p>
 <p>You may also be interested in the <code>stub_node</code> macro, which will create a new <code>Chef::Node</code> object and accepts the same parameters as the Chef Runner and a Fauxhai object:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="n">www</span> <span class="o">=</span> <span class="n">stub_node</span><span class="p">(</span><span class="ss">platform</span><span class="p">:</span> <span class="s1">'ubuntu'</span><span class="p">,</span> <span class="ss">version</span><span class="p">:</span> <span class="s1">'12.04'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
-        <span class="n">node</span><span class="o">[</span><span class="s1">'fqdn'</span><span class="o">]</span> <span class="o">=</span> <span class="s1">'www1.example.com'</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">set</span><span class="o">[</span><span class="s1">'attribute'</span><span class="o">]</span> <span class="o">=</span> <span class="s1">'value'</span>
       <span class="k">end</span>
 
 <span class="c1"># `www` is now a local Chef::Node object you can use in your test. To push this</span>
 <span class="c1"># node to the server, call `create_node`:</span>
 
-<span class="no">ChefSpec</span><span class="o">::</span><span class="no">Server</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="s1">'www'</span><span class="p">,</span> <span class="n">www</span><span class="p">)</span>
+<span class="no">ChefSpec</span><span class="o">::</span><span class="no">Server</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">www</span><span class="p">)</span>
 </pre></div>
 
 <p>Create a role:</p>
@@ -479,7 +493,7 @@ You can stub this command with:
 
 You can stub this data_bag with:
 
-  stub_data_bag("users").and_return({})
+  stub_data_bag("users").and_return([])
 
 ============================================================
 </pre></div>
@@ -499,10 +513,7 @@ You can stub this data_bag with:
   <span class="n">let</span><span class="p">(</span><span class="ss">:chef_run</span><span class="p">)</span> <span class="p">{</span> <span class="no">ChefSpec</span><span class="o">::</span><span class="no">Runner</span><span class="o">.</span><span class="n">new</span> <span class="p">}</span>
 
   <span class="n">before</span> <span class="k">do</span>
-    <span class="n">stub_data_bag</span><span class="p">(</span><span class="s1">'users'</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="o">[</span>
-      <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="s1">'svargo'</span> <span class="p">},</span>
-      <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="s1">'francis'</span> <span class="p">}</span>
-    <span class="o">]</span><span class="p">)</span>
+    <span class="n">stub_data_bag</span><span class="p">(</span><span class="s1">'users'</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="o">[</span><span class="s1">'svargo'</span><span class="p">,</span> <span class="s1">'francis'</span><span class="o">]</span><span class="p">)</span>
 
     <span class="n">stub_data_bag_item</span><span class="p">(</span><span class="s1">'users'</span><span class="p">,</span> <span class="s1">'svargo'</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">({</span> <span class="o">.</span><span class="n">.</span><span class="o">.</span> <span class="p">})</span>
     <span class="n">stub_data_bag_item</span><span class="p">(</span><span class="s1">'users'</span><span class="p">,</span> <span class="s1">'francis'</span><span class="p">)</span> <span class="p">{</span> <span class="p">(</span><span class="n">ruby</span> <span class="n">code</span><span class="p">)</span> <span class="p">}</span>
@@ -558,13 +569,14 @@ You can stub this search with:
 <h2>
 <a name="reporting" class="anchor" href="#reporting"><span class="octicon octicon-link"></span></a>Reporting</h2>
 
-<p>ChefSpec attempts to generate a report of resources read over resources tested. Please note, this feature is currently in beta phases and may not be 100% accurate. That being said, it's currently the only code coverage tool available for Chef recipes.</p>
+<p>ChefSpec can generate a report of resources read over resources tested. Please note, this feature is currently in beta phases and may not be 100% accurate. That being said, it is currently the only code coverage tool available for Chef recipes.</p>
 
-<p>To generate the coverage report, add the following to the <strong>very end</strong> of your <code>spec_helper.rb</code>:</p>
+<p>To generate the coverage report, add the following to your <code>spec_helper.rb</code> before you require any "Chef" code:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="c1"># Existing things...</span>
+<div class="highlight highlight-ruby"><pre><span class="nb">require</span> <span class="s1">'chefspec'</span>
+<span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">start!</span>
 
-<span class="nb">at_exit</span> <span class="p">{</span> <span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">report!</span> <span class="p">}</span>
+<span class="c1"># Existing spec_helper contents...</span>
 </pre></div>
 
 <p>By default, that method will output helpful information to standard out:</p>
@@ -577,20 +589,69 @@ You can stub this search with:
 
 Untouched Resources:
 
-  package[git]: bacon/recipes/default.rb:2
-  package[build-essential]: bacon/recipes/default.rb:3
-  package[apache2]: bacon/recipes/default.rb:4
-  package[libvrt]: bacon/recipes/default.rb:5
-  package[core]: bacon/recipes/default.rb:6
+  package[git]               bacon/recipes/default.rb:2
+  package[build-essential]   bacon/recipes/default.rb:3
+  package[apache2]           bacon/recipes/default.rb:4
+  package[libvrt]            bacon/recipes/default.rb:5
+  package[core]              bacon/recipes/default.rb:6
 </pre></div>
 
 <p>It also outputs a machine-parsable JSON file at <code>.coverage/results.json</code>. This file can be read by your CI server to determine changes in code coverage. We recommend adding the <code>.coverage</code> directory to your <code>.gitignore</code> to avoid committing it to git.</p>
 
 <p>You can configure both the announcing behavior and JSON file. Please see the YARD documentation for more information.</p>
 
-<p>If you want to restrict coverage reporting only against certain cookbook directories, you can do it using filters. For example, to include only the site-cookbooks directory for coverage reporting, add the following line in your <code>spec/spec_helper.rb</code></p>
+<p>By default, ChefSpec will test all cookbooks that are loaded as part of the Chef Client run. If you have a cookbook with many dependencies, this may be less than desireable. To restrict coverage reporting against certain cookbooks, <code>ChefSpec::Coverage</code> yields a block:</p>
 
-<div class="highlight highlight-ruby"><pre> <span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">filters</span> <span class="o">&lt;&lt;</span> <span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s1">'../../site-cookbooks'</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">)</span>
+<div class="highlight highlight-ruby"><pre><span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">start!</span> <span class="k">do</span>
+  <span class="n">add_filter</span> <span class="s1">'vendor/cookbooks'</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>The <code>add_filter</code> method accepts a variety of objects. For example:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">start!</span> <span class="k">do</span>
+  <span class="c1"># Strings are interpreted as file paths, with a forward anchor</span>
+  <span class="n">add_filter</span> <span class="s1">'vendor/cookbooks'</span>
+
+  <span class="c1"># Regular expressions must be escaped, but provide a nicer API for negative</span>
+  <span class="c1"># back tracking</span>
+  <span class="n">add_filter</span> <span class="sr">/cookbooks\/(?!omnibus)/</span>
+
+  <span class="c1"># Custom block filters yield a {Chef::Resource} object - if the block</span>
+  <span class="c1"># evaluates to true, it will be filtered</span>
+  <span class="n">add_filter</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+    <span class="c1"># Bob's cookbook's are completely untested! Ignore them until he gets his</span>
+    <span class="c1"># shit together.</span>
+    <span class="n">resource</span><span class="o">.</span><span class="n">source_file</span> <span class="o">=~</span> <span class="sr">/cookbooks\/bob-(.+)/</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>For more complex scenarios, you can create a custom <code>Filter</code> object that inherits from <code>ChefSpec::Coverage::Filter</code> and implements the <code>matches?</code> method.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">CustomFilter</span> <span class="o">&lt;</span> <span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">::</span><span class="no">Filter</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="c1"># Create a custom initialization method, do some magic, etc.</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">matches?</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+    <span class="c1"># Custom matching logic in here - anything that evaluates to "true" will be</span>
+    <span class="c1"># filtered.</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">ChefSpec</span><span class="o">::</span><span class="no">Converage</span><span class="o">.</span><span class="n">start!</span> <span class="k">do</span>
+  <span class="n">add_filter</span> <span class="no">CustomFilter</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="ss">:bar</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>If you are using ChefSpec's Berkshelf plugin, a filter is automatically created for you. If you would like to ignore that filter, you can <code>clear</code> all the filters before defining your own:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">start!</span> <span class="k">do</span>
+  <span class="n">filters</span><span class="o">.</span><span class="n">clear</span>
+
+  <span class="c1"># Add your custom filters now</span>
+<span class="k">end</span>
 </pre></div>
 
 <h2>

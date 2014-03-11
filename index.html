@@ -596,10 +596,6 @@ Untouched Resources:
   package[core]              bacon/recipes/default.rb:6
 </pre></div>
 
-<p>It also outputs a machine-parsable JSON file at <code>.coverage/results.json</code>. This file can be read by your CI server to determine changes in code coverage. We recommend adding the <code>.coverage</code> directory to your <code>.gitignore</code> to avoid committing it to git.</p>
-
-<p>You can configure both the announcing behavior and JSON file. Please see the YARD documentation for more information.</p>
-
 <p>By default, ChefSpec will test all cookbooks that are loaded as part of the Chef Client run. If you have a cookbook with many dependencies, this may be less than desireable. To restrict coverage reporting against certain cookbooks, <code>ChefSpec::Coverage</code> yields a block:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="no">ChefSpec</span><span class="o">::</span><span class="no">Coverage</span><span class="o">.</span><span class="n">start!</span> <span class="k">do</span>
@@ -879,7 +875,7 @@ Relevant File Content:
 
 <p>Assert that the correct attribute is used:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="n">expect</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">node</span><span class="o">[</span><span class="s1">'bacon'</span><span class="o">][</span><span class="s1">'temperature'</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">150</span><span class="p">)</span>
+<div class="highlight highlight-ruby"><pre><span class="n">expect</span><span class="p">(</span><span class="n">chef_run</span><span class="o">.</span><span class="n">node</span><span class="o">[</span><span class="s1">'bacon'</span><span class="o">][</span><span class="s1">'temperature'</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">150</span><span class="p">)</span>
 </pre></div>
 
 <p><strong>NOTE</strong> If your roles live somewhere outside of the expected path, you must set <code>RSpec.config.role_path</code> to point to the directory containing your roles <strong>before</strong> invoking the <code>#converge</code> method!</p>
